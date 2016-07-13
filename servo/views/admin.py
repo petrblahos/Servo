@@ -696,7 +696,7 @@ class Backup(object):
         self.filesize = os.path.getsize(path)
 
     def get_wrapper(self):
-        from django.core.servers.basehttp import FileWrapper
+        from wsgiref.util import FileWrapper
         return FileWrapper(file(self.path))
 
     def get_response(self):

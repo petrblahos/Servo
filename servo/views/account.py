@@ -8,9 +8,8 @@ from django.contrib import auth
 from django.utils import timezone, translation
 
 from django.contrib import messages
-from django.http import QueryDict
-from django.http import HttpResponse
 from django.core.urlresolvers import reverse
+from django.http import QueryDict, HttpResponse
 from dateutil.relativedelta import relativedelta
 from django.utils.translation import ugettext as _
 from django.contrib.auth.decorators import permission_required
@@ -306,7 +305,10 @@ def edit_calendar_event(request, cal_pk, pk=None):
 
 @permission_required("servo.change_calendar")
 def finish_calendar_event(request, cal_pk, pk):
-    event = get_object_or_404(get_object_or_404, pk=pk)
+    """
+    Marks an event as being finished
+    """
+    event = get_object_or_404(CalendarEvent, pk=pk)
     event.set_finished()
     messages.success(request, _(u'Calendar event updated'))
     return redirect(view_calendar, cal_pk, 'week')
