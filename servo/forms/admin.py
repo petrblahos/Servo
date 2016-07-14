@@ -18,7 +18,7 @@ from servo.models import User, Group, Checklist
 
 class UserUploadForm(forms.Form):
     datafile = forms.FileField()
-    location = forms.ModelChoiceField(queryset=Location.objects.all())
+    location = forms.ModelChoiceField(queryset=Location.objects.filter(enabled=True))
     queues = forms.ModelMultipleChoiceField(
         queryset=Queue.objects.all()
     )
