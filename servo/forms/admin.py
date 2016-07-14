@@ -354,6 +354,7 @@ class SettingsForm(BaseForm):
             ('DKK', 'DKK'),
             ('EUR', 'EUR'),
             ('GBP', 'GBP'),
+            ('NZD', 'NZD'),
             ('SEK', 'SEK'),
             ('USD', 'USD'),
             ('ZAR', 'ZAR'),
