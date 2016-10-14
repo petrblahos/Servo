@@ -79,11 +79,11 @@ class DeviceForm(forms.ModelForm):
             'password',
         )
         widgets = {
-            'sn' : SearchFieldInput(),
-            'password' : forms.PasswordInput(),
-            'username' : forms.TextInput(),
-            'purchased_on' : SelectDateWidget(years=YEARS),
-            'warranty_status' : forms.Select(attrs={'readonly': 'readonly'}),
+            'sn': SearchFieldInput(),
+            'password': forms.PasswordInput(),
+            'username': forms.TextInput(),
+            'purchased_on': SelectDateWidget(years=YEARS),
+            'warranty_status': forms.Select(attrs={'readonly': 'readonly'}),
         }
 
     def __init__(self, *args, **kwargs):

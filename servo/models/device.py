@@ -140,7 +140,6 @@ class Device(models.Model):
     )
     purchase_country = models.CharField(
         blank=True,
-        editable=False,
         max_length=128,
         choices=countries,
         default=defaults.country,

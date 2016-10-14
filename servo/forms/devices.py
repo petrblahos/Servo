@@ -32,7 +32,7 @@ class DeviceSearchForm(forms.Form):
         widget=DatepickerInput(attrs={'class': 'input-small'})
     )
     sn = forms.CharField(required=False, label=_('Serial number contains'))
-    
+
     def __init__(self, *args, **kwargs):
         super(DeviceSearchForm, self).__init__(*args, **kwargs)
         self.fields['description'] = AutocompleteCharField(
@@ -47,7 +47,7 @@ class DeviceForm(forms.ModelForm):
     class Meta:
         model = Device
         exclude = ('spec', 'customers', 'files', 'image_url',
-                   'exploded_view_url', 'manual_url',)
+                   'exploded_view_url', 'manual_url', )
         widgets = {'purchased_on': DatepickerInput()}
 
     tags = forms.ModelMultipleChoiceField(
