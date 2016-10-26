@@ -77,14 +77,20 @@
   </a>
   <ul class="dropdown-menu">
   {% if request.user in order.followed_by.all %}
-    <li><a href="{% url 'orders-toggle_follow' order.pk %}">{% trans "Unfollow Order" %}</a></li>
+    <li><a href="{% url 'orders-toggle_follow' order.pk %}">{% trans "Unfollow" %}</a></li>
   {% else %}
-    <li><a href="{% url 'orders-toggle_follow' order.pk %}">{% trans "Follow Order" %}</a></li>
+    <li><a href="{% url 'orders-toggle_follow' order.pk %}">{% trans "Follow" %}</a></li>
   {% endif %}
-  {% if perms.servo.add_order and perms.servo.copy_order %}
-    <li><a href="{% url 'orders-copy_order' order.pk %}">{% trans "Duplicate Order" %}</a></li>
+  {% if request.user == order.user %}
+    <li><a href="{% url 'orders-remove_user' order.pk request.user.pk %}">{% trans "Unassign" %}</a></li>
   {% else %}
-    <li><a class="disabled" href="#">{% trans "Duplicate Order" %}</a></li>
+    <li><a href="{% url 'orders-update' order.pk 'user' request.user.pk %}">{% trans "Assign to me" %}</a></li>
+  {% endif %}
+    <li class="divider"></li>
+  {% if perms.servo.add_order and perms.servo.copy_order %}
+    <li><a href="{% url 'orders-copy_order' order.pk %}">{% trans "Duplicate" %}</a></li>
+  {% else %}
+    <li><a class="disabled" href="#">{% trans "Duplicate" %}</a></li>
   {% endif %}
     <li><a href="{% url 'barcodes-view' order.code %}?f=svg" target="_blank">{% trans "Show Barcode" %}</a></li>
     <li class="divider"></li>
