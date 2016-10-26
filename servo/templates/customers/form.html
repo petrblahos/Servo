@@ -31,6 +31,7 @@
         </div>
       </div>
       {% endfor %}
+      {% if fields %}
       <div class="control-group property">
         <select name="keys" class="control-label" data-value="{{ fields.0.title }}">
         {% for f in fields %}
@@ -41,6 +42,7 @@
           <input type="text" name="values"/>
         </div>
       </div>
+      {% endif %}
       {% include "form_field_snippet.html" with field=form.photo %}
       {% include "form_field_snippet.html" with field=form.groups %}
       {% include "form_field_snippet.html" with field=form.notes %}
