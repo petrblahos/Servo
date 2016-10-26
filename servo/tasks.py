@@ -26,7 +26,7 @@ def get_rules():
         fh = open("local_rules.json", "r")
     except IOError:
         return []
-        
+
     rules = json.load(fh)
     cache.set('rules', rules)
     return rules
@@ -65,7 +65,7 @@ def apply_rules(event):
                     email = order.customer.valid_email()
                 except Exception:
                     continue # skip customers w/o valid emails
-                
+
                 note = Note(order=order, created_by=user)
                 note.body = r['data']
                 note.recipient = email
@@ -107,7 +107,7 @@ def batch_process(user, data):
     """
     processed = 0
     orders = data['orders'].strip().split("\r\n")
-    
+
     for o in orders:
         try:
             order = Order.objects.get(code=o)
@@ -117,7 +117,7 @@ def batch_process(user, data):
         if data['status'] and order.queue:
             status = order.queue.queuestatus_set.get(status_id=data['status'])
             order.set_status(status, user)
-        
+
         if data['queue']:
             order.set_queue(data['queue'], user)
 
@@ -134,7 +134,7 @@ def batch_process(user, data):
                     note.delete()
                     print("Failed to send SMS to: %s" % number)
 
-            except AttributeError as e: # customer has no phone number
+            except AttributeError as e:  # customer has no phone number
                 continue
 
         if len(data['email']) > 0:
