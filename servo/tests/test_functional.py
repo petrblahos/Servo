@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import os
 import unittest
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 
 
+@unittest.skip
 class NewVisitorTest(unittest.TestCase):
     def setUp(self):
         self.url = 'http://localhost:8000/checkin/'

@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-from django.test import TestCase
+
 from django.http import HttpRequest
 from django.core.urlresolvers import resolve
-from django.test.simple import DjangoTestSuiteRunner
+from django.test import TestCase
+from django.test.runner import DiscoverRunner
 
 from servo.views import checkin
 
 
-class NoDbTestRunner(DjangoTestSuiteRunner):
+class NoDbTestRunner(DiscoverRunner):
     """ A test runner to test without database creation """
 
     def setup_databases(self, **kwargs):
@@ -24,7 +25,8 @@ class NoDbTestRunner(DjangoTestSuiteRunner):
 class ApiTest(TestCase):
     pass
 
-    
+
+@unittest.skip
 class CheckinTest(TestCase):
     def test_checkin_url_resolves(self):
         found = resolve('/checkin/')
