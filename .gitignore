@@ -10,6 +10,7 @@ uploads/settings/*
 uploads/products/*
 uploads/repairs/*
 uploads/templates/*
+uploads/temp/*
 backups/*
 local_settings.py
 local_rules.json
