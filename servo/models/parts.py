@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 
+import os
 import yaml
+import shutil
+
 import gsxws
 
 from django.db import models
+from django.conf import settings
 from django.utils import timezone
 from django.core.files import File
 from django.core.cache import caches
@@ -297,19 +301,17 @@ class ServicePart(models.Model):
         return part
 
     def needs_comptia_code(self):
-        """
-        CompTIA not required for Replacement and Other category parts.
+        """Comptia not required for Replacement and Other category parts.
+
         In practice this is here for Adjustment-type parts (#011-0663)
         """
         return self.order_item.product.part_type != 'ADJUSTMENT'
 
     def get_repair_order_line(self):
-        """
-        Returns GSX RepairOrderLine entry for this part
-        """
+        """Return GSX RepairOrderLine entry for this part."""
         ol = gsxws.RepairOrderLine()
         ol.partNumber = self.part_number
-        ol.consignmentFlag = False # @TODO: Put this in the GUI
+        ol.consignmentFlag = False  # @TODO: Put this in the GUI
 
         oi = self.order_item
         ol.abused = oi.is_abused
@@ -329,32 +331,32 @@ class ServicePart(models.Model):
         return ol
 
     def get_comptia_symptoms(self):
-        """
-        Returns the appropriate CompTIA codes for this part
-        """
+        """Return the appropriate CompTIA codes for this part."""
         product = self.order_item.product
         return symptom_codes(product.component_code)
 
     def get_return_label(self):
-        """
-        Returns the GSX return label for this part
-        """
+        """Get the GSX return label for this part."""
         if self.return_label.name == "":
             # Return label not yet set, get it...
             label = gsxws.Return(self.return_order).get_label(self.part_number)
             filename = "%s_%s.pdf" % (self.return_order, self.part_number)
+            tmp_fp = os.path.join(settings.TEMP_ROOT, filename)
+            #  move the label to local temp to avoid
+            #  django.security.SuspiciousFileOperation
+            shutil.move(label.returnLabelFileData, tmp_fp)
 
-            f = File(open(label.returnLabelFileData))
+            f = File(open(tmp_fp, 'r'))
             self.return_label = f
             self.save()
             self.return_label.save(filename, f)
+            f.closed
+            os.remove(tmp_fp)
 
         return self.return_label.read()
 
     def update_module_sn(self):
-        """
-        Updates the GSX module serial numbers
-        """
+        """Update the GSX module serial numbers."""
         part = gsxws.ServicePart(self.order_item.code)
         part.oldSerialNumber = self.order_item.kbb_sn
         part.serialNumber = self.order_item.sn
@@ -365,16 +367,15 @@ class ServicePart(models.Model):
 
     def update_replacement_sn(self):
         """
-        Updates the Whole-Unit swap KGB SN
-        With the user's own GSX credentials, falling back to the defaults
+        Update the Whole-Unit swap KGB SN.
+
+        Use the user's own GSX credentials, falling back to the defaults
         """
         repair = self.repair.get_gsx_repair()
         return repair.update_kgb_sn(self.order_item.sn)
 
     def can_update_sn(self):
-        """
-        Can update SN to GSX only if SN defined
-        """
+        """Can update SN to GSX only if SN defined."""
         soi = self.order_item
         return soi.sn != ''
 
