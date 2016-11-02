@@ -25,9 +25,8 @@ from servo.models.queue import Queue, Status, QueueStatus
 
 
 class Order(models.Model):
-    """
-    The Service Order
-    """
+    """The Service Order."""
+
     code = models.CharField(max_length=8, unique=True, null=True)
     url_code = models.CharField(max_length=8, unique=True, null=True)
     # Device description or something else
@@ -123,10 +122,10 @@ class Order(models.Model):
         related_name="orders"
     )
 
-    STATE_QUEUED    = 0 # order hasn't been started
-    STATE_OPEN      = 1 # order is being worked on
-    STATE_CLOSED    = 2 # order is closed
-    STATE_WAITING   = 3 # order is waiting (do not track duration)
+    STATE_QUEUED    = 0  # order hasn't been started
+    STATE_OPEN      = 1  # order is being worked on
+    STATE_CLOSED    = 2  # order is closed
+    STATE_WAITING   = 3  # order is waiting (do not track duration)
 
     STATES = (
         (STATE_QUEUED,   _("Unassigned")),
@@ -139,8 +138,8 @@ class Order(models.Model):
 
     status_name = models.CharField(max_length=128, default="")
     status_started_at = models.DateTimeField(null=True)
-    status_limit_green = models.DateTimeField(null=True)  # turn yellow after this
-    status_limit_yellow = models.DateTimeField(null=True) # turn red after this
+    status_limit_green = models.DateTimeField(null=True)   # turn yellow after this
+    status_limit_yellow = models.DateTimeField(null=True)  # turn red after this
 
     api_fields = ('status_name', 'status_description',)
 
@@ -177,9 +176,7 @@ class Order(models.Model):
         return [self.add_tag(t, user) for t in tags]
 
     def check_in(self, user):
-        """
-        Checks this Order in through the check-in process
-        """
+        """Check this Order in through the check-in process."""
         queue_id = Configuration.conf('checkin_queue')
         self.set_queue(queue_id, user)
 
@@ -197,6 +194,10 @@ class Order(models.Model):
         return new_order
 
     def get_print_template(self, kind="confirmation"):
+        """Return the name of the correct print template for this order.
+
+        Based on the order's queue
+        """
         template = "orders/print_%s.html" % kind
 
         if self.queue:
@@ -346,12 +347,11 @@ class Order(models.Model):
             return False
 
     def close(self, user):
-        """
-        Closes this service order
-        """
+        """Close this service order."""
         if Configuration.autocomplete_repairs():
             for r in self.repair_set.active():
                 try:
+                    r.set_status_code('RFPU')
                     r.close(user)
                 except Exception as e:
                     # notify the creator of the GSX repair instead of just erroring out
@@ -374,7 +374,7 @@ class Order(models.Model):
         self.state = Order.STATE_OPEN
         self.closed_at = None
         self.save()
-        
+
         msg = _("Order %s reopened") % self.code
         self.notify("reopen", msg, user)
         return msg
