@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import re
 import gsxws
 import os.path
 
-from decimal import Decimal
 from django.core.urlresolvers import reverse
 from django.template.defaultfilters import slugify
 from pytz import common_timezones, country_timezones
@@ -386,10 +384,17 @@ class Tag(MPTTModel):
         order_insertion_by = ['title']
 
 
+class LocationManager(models.Manager):
+    """Custom model manager for enabled locations."""
+
+    def enabled(self, **kwargs):
+        """Only locations that are marked as enabled."""
+        return self.filter(enabled=True, **kwargs)
+
+
 class Location(models.Model):
-    """
-    A Service Location within a company
-    """
+    """A Service Location within a company."""
+
     site = models.ForeignKey(
         Site,
         editable=False,
@@ -465,8 +470,8 @@ class Location(models.Model):
 
     notes = models.TextField(
         blank=True,
-        default='9:00 - 18:00',
         verbose_name=_('Notes'),
+        default=_('Business hours between 9:00 - 18:00'),
         help_text=_('Will be shown on print templates')
     )
 
@@ -487,6 +492,8 @@ class Location(models.Model):
         default=True,
         verbose_name=_('Use for check-in')
     )
+
+    objects = LocationManager()
 
     @classmethod
     def get_checkin_list(cls):
@@ -648,7 +655,7 @@ class Configuration(models.Model):
         config = super(Configuration, self).save(*args, **kwargs)
         # Using cache instead of session since it's shared among
         # all the users of the instance
-        cache.set('config', config, 60*60*24*1)
+        cache.set('config', config, 60 * 60 * 24 * 1)
 
     class Meta:
         app_label = 'servo'
@@ -764,9 +771,8 @@ class Template(models.Model):
 
 
 class Attachment(BaseItem):
-    """
-    A file attached to something
-    """
+    """A file attached to something."""
+
     mime_type = models.CharField(max_length=64, editable=False)
     content = models.FileField(
         upload_to='attachments',

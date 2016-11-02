@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import gsxws
-import phonenumbers
 
 from django import forms
 from datetime import date
@@ -11,26 +10,29 @@ from django.core.validators import RegexValidator
 from django.utils.translation import ugettext_lazy as _
 from django.forms.extras.widgets import SelectDateWidget
 
-from servo.validators import apple_sn_validator, phone_validator, file_upload_validator
+from servo.validators import (apple_sn_validator,
+                              phone_validator,
+                              file_upload_validator,)
 
 from servo.forms.base import SearchFieldInput
-from servo.models import (Configuration, Device, 
+from servo.models import (Configuration, Device,
                           Attachment, Location,
                           Customer,)
 
 
 # Generate list of years for purchase date picker
 y = date.today().year
-YEARS = [x+1 for x in xrange(y-10, y)]
+YEARS = [x + 1 for x in xrange(y - 10, y)]
 
 
 def get_checkin_locations(user):
+    """Return possible checkin location choices for this user."""
     from servo.models import User
     if user.is_authenticated():
-        return user.locations.all()
+        return user.locations.enabled()
     else:
         user_id = Configuration.conf('checkin_user')
-        return User.objects.get(pk=user_id).locations.all()
+        return User.objects.get(pk=user_id).locations.enabled()
 
 
 class ConfirmationForm(forms.Form):
@@ -107,7 +109,7 @@ class DeviceForm(forms.ModelForm):
                 del(self.fields['imei'])
             if not prod.is_mac:
                 del(self.fields['username'])
-            
+
         if Configuration.true('checkin_password'):
             self.fields['password'].widget = forms.TextInput(attrs={'class': 'span12'})
 
@@ -115,17 +117,11 @@ class DeviceForm(forms.ModelForm):
 class CustomerForm(forms.Form):
 
     from django.utils.safestring import mark_safe
-    
+
     required_css_class = 'required'
 
-    fname = forms.CharField(
-        label=_('First name'),
-        #initial='Filipp'
-    )
-    lname = forms.CharField(
-        label=_('Last name'),
-        #initial='Lepalaan'
-    )
+    fname = forms.CharField(label=_('First name'))
+    lname = forms.CharField(label=_('Last name'))
 
     company = forms.CharField(
         required=False,
@@ -133,40 +129,31 @@ class CustomerForm(forms.Form):
     )
     email = forms.EmailField(
         label=_('Email address'),
-        widget=forms.TextInput(attrs={'class': 'span12'}),
-        #initial='filipp@fps.ee'
+        widget=forms.TextInput(attrs={'class': 'span12'})
     )
     phone = forms.CharField(
         label=_('Phone number'),
-        validators=[phone_validator],
-        #initial='12345678790'
+        validators=[phone_validator]
     )
-    address = forms.CharField(
-        label=_('Address'),
-        #initial='Example street'
-    )
-    country = forms.ChoiceField(label=_('Country'),
+    address = forms.CharField(label=_('Address'))
+    country = forms.ChoiceField(
+        label=_('Country'),
         choices=Customer.COUNTRY_CHOICES,
-        initial=settings.INSTALL_COUNTRY)
-    city = forms.CharField(
-        label=_('City'),
-        #initial='Helsinki'
+        initial=settings.INSTALL_COUNTRY
     )
-    postal_code = forms.CharField(
-        label=_('Postal Code'),
-        #initial='000100'
-    )
+    city = forms.CharField(label=_('City'))
+    postal_code = forms.CharField(label=_('Postal Code'))
     checkin_location = forms.ModelChoiceField(
         empty_label=None,
         label=_(u'Check-in location'),
-        queryset=Location.objects.all(),
+        queryset=Location.objects.enabled(),
         widget=forms.Select(attrs={'class': 'span12'}),
         help_text=_('Choose where you want to leave the device')
     )
     checkout_location = forms.ModelChoiceField(
         empty_label=None,
         label=_(u'Check-out location'),
-        queryset=Location.objects.all(),
+        queryset=Location.objects.enabled(),
         widget=forms.Select(attrs={'class': 'span12'}),
         help_text=_('Choose where you want to pick up the device')
     )
@@ -195,10 +182,9 @@ class CustomerForm(forms.Form):
     def __init__(self, request, *args, **kwargs):
 
         super(CustomerForm, self).__init__(*args, **kwargs)
-        user = request.user
 
         location = request.session['checkin_location']
-        locations = get_checkin_locations(user)
+        locations = get_checkin_locations(request.user)
 
         self.fields['checkin_location'].queryset = locations
         self.fields['checkin_location'].initial = location
@@ -213,7 +199,6 @@ class CustomerForm(forms.Form):
 class AppleSerialNumberForm(forms.Form):
     sn = forms.CharField(
         min_length=8,
-        #initial='C34JTVKYDTWF',
         validators=[apple_sn_validator],
         label=_(u'Serial number or IMEI')
     )
@@ -226,7 +211,6 @@ class AppleSerialNumberForm(forms.Form):
 class SerialNumberForm(forms.Form):
     sn = forms.CharField(
         min_length=8,
-        initial='C34JTVKYDTWF',
         label=_(u'Serial number')
     )
 
@@ -277,4 +261,3 @@ class AttachmentForm(forms.ModelForm):
     class Meta:
         model = Attachment
         exclude = []
-
