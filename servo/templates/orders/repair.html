@@ -12,26 +12,34 @@
 
 {% block second_column %}
 <h3>{{ status }}</h3>
-<dl class="dl-horizontal">
-  <dt>{% trans "Symptom" %}</dt>
-  <dd>{{ repair.symptom }}</dd>
-  <dt>{% trans "Diagnosis" %}</dt>
-  <dd>{{ repair.diagnosis }}</dd>
-  <dt>{% trans "Request Review" %}</dt>
-  <dd>{{ repair.request_review|yesno }}</dd>
-{% if repair.attachment %}
-  <dt>{% trans "Attachment" %}</dt>
-  {% with repair.attachment as a %}
-  <dd><a class="label label-info window" href="{{ a.url }}"><i class="icon-download icon-white"></i> {{ a }}</a></dd>
-  {% endwith %}
-{% endif %}
-  <dt>{% trans "Confirmation" %}</dt>
-  <dd>{{ repair.confirmation }}</dd>
-  <dt>{% trans "Reference" %}</dt>
-  <dd>{{ repair.reference }}</dd>
-  <dt>{% trans "Notes" %}</dt>
-  <dd>{{ notes|default:"-"|linebreaks }}</dd>
-</dl>
+<form method="post" action="">
+  {% csrf_token %}
+  <dl class="dl-horizontal">
+    <dt>{% trans "Symptom" %}</dt>
+    <dd>{{ repair.symptom|default:'-' }}</dd>
+    <dt>{% trans "Diagnosis" %}</dt>
+    <dd>{{ repair.diagnosis|default:'-' }}</dd>
+    <dt>{% trans "Request Review" %}</dt>
+    <dd>{{ repair.request_review|yesno }}</dd>
+  {% if repair.attachment %}
+    <dt>{% trans "Attachment" %}</dt>
+    {% with repair.attachment as a %}
+    <dd><a class="label label-info window" href="{{ a.url }}"><i class="icon-download icon-white"></i> {{ a }}</a></dd>
+    {% endwith %}
+  {% endif %}
+    <dt>{% trans "Confirmation" %}</dt>
+    <dd>{{ repair.confirmation|default:'-' }}</dd>
+    <dt>{% trans "Reference" %}</dt>
+    <dd>{{ repair.reference|default:'-' }}</dd>
+    <dt>{% trans "Notes" %}</dt>
+    <dd>{{ notes|default:"-"|linebreaks }}</dd>
+    <dt>{% trans "Status" %}</dt>
+    <dd>{{ status_form.status }}</dd>
+  </dl>
+  <button type="submit" class="btn btn-primary pull-right">{% trans "Update" %}</button>
+</form>
+<br/>
+<h4>{% trans "Parts" %}</h4>
 <table class="table">
   <tbody>
   {% for part in parts %}

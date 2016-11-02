@@ -27,6 +27,7 @@ from servo.lib.utils import paginate
 
 from servo.models.order import *
 from servo.forms.orders import *
+from servo.forms.repairs import StatusForm
 
 from servo.models import Note, User, Device, Customer
 from servo.models.common import (Tag,
@@ -225,9 +226,7 @@ def reopen_order(request, pk):
 
 @permission_required("servo.add_order")
 def create(request, sn=None, device_id=None, product_id=None, note_id=None, customer_id=None):
-    """
-    Creates a new Service Order
-    """
+    """Create a new Service Order."""
     order = Order(created_by=request.user)
 
     if customer_id is not None:
@@ -303,11 +302,8 @@ def toggle_tag(request, order_id, tag_id):
 
 @permission_required("servo.change_order")
 def toggle_task(request, order_id, item_id):
-    """
-    Toggles a given Check List item in this order
-    """
+    """Toggle a given Check List item in this order."""
     checklist_item = get_object_or_404(ChecklistItem, pk=item_id)
-    
     try:
         item = ChecklistItemValue.objects.get(order_id=order_id,
                                               item=checklist_item)
@@ -323,9 +319,7 @@ def toggle_task(request, order_id, item_id):
 
 
 def repair(request, order_id, repair_id):
-    """
-    Show the corresponding GSX Repair for this Service Order
-    """
+    """Show the corresponding GSX Repair for this Service Order."""
     repair = get_object_or_404(Repair, pk=repair_id)
     data = prepare_detail_view(request, order_id)
     data['repair'] = repair
@@ -342,19 +336,35 @@ def repair(request, order_id, repair_id):
         messages.error(request, e)
 
     data['parts'] = repair.servicepart_set.all()
+
+    if request.method == 'POST':
+        data['status_form'] = StatusForm(request.POST)
+        if data['status_form'].is_valid():
+            code = data['status_form'].cleaned_data['status']
+            try:
+                repair.set_status_code(code)
+                new_status = repair.get_status_code_display()
+                msg = _('Repair status updated to %s') % new_status
+                messages.success(request, msg)
+            except Exception as e:
+                messages.error(request, e)
+    else:
+        data['status_form'] = StatusForm(initial={'status': repair.status_code})
+
     return render(request, "orders/repair.html", data)
 
 
 @permission_required("servo.change_order")
 def complete_repair(request, order_id, repair_id):
+    """Mark this repair as complete in GSX."""
     repair = get_object_or_404(Repair, pk=repair_id)
-    
+
     if request.method == 'POST':
         try:
             repair.close(request.user)
             msg = _(u"Repair %s marked complete.") % repair.confirmation
             messages.success(request, msg)
-        except GsxError, e:
+        except GsxError as e:
             messages.error(request, e)
 
         return redirect(repair.order)

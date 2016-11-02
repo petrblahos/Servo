@@ -1,26 +1,31 @@
 # -*- coding: utf-8 -*-
 
 import json
+import gsxws
 
 from django import forms
 from django_countries import countries
-
 from django.utils.translation import ugettext as _
 
 from servo.models import User, Repair, Template
-from servo.forms import (BaseForm, AutocompleteTextarea, DateTimePickerInput,
-                        ChoiceField,)
+from servo.forms import (BaseForm, AutocompleteTextarea,
+                         DateTimePickerInput, ChoiceField,)
 
 
 class ImportForm(BaseForm):
+    """Import GSX repair."""
+
     confirmation = forms.CharField(min_length=8,
                                    max_length=15,
-                                   label=_('Confirmation'))
+                                   label=_('Confirmation'),
+                                   help_text=_('Please enter the GSX dispatch ID'))
 
 
 class GsxCustomerForm(BaseForm):
+    """Form for GSX customer data."""
+
     firstName = forms.CharField(max_length=100, label=_('First name'))
-    lastName  = forms.CharField(max_length=100, label=_('Last name'))
+    lastName = forms.CharField(max_length=100, label=_('Last name'))
     emailAddress = forms.CharField(max_length=100, label=_('Email'))
     primaryPhone = forms.CharField(max_length=100, label=_('Phone'))
     addressLine1 = forms.CharField(max_length=100, label=_('Address'))
@@ -35,7 +40,7 @@ class GsxComponentForm(forms.Form):
         components = kwargs.get('components')
         del(kwargs['components'])
         super(GsxComponentForm, self).__init__(*args, **kwargs)
-        
+
         if len(components):
             components = json.loads(components)
             for k, v in components.items():
@@ -44,6 +49,18 @@ class GsxComponentForm(forms.Form):
     def clean(self, *args, **kwargs):
         super(GsxComponentForm, self).clean(*args, **kwargs)
         self.json_data = json.dumps(self.cleaned_data)
+
+
+class StatusForm(forms.Form):
+    """Form for updating GSX repair status."""
+    status = ChoiceField(label=_('Status'), choices=gsxws.repairs.REPAIR_STATUSES)
+
+    def __init__(self, *args, **kwargs):
+        super(StatusForm, self).__init__(*args, **kwargs)
+        empty_choice = ('', '----',)
+        choices = list(gsxws.repairs.REPAIR_STATUSES)
+        choices.insert(0, empty_choice)
+        self.fields['status'].choices = choices
 
 
 class GsxRepairForm(forms.ModelForm):
@@ -75,11 +92,11 @@ class GsxRepairForm(forms.ModelForm):
         choices = Template.templates()
         for f in ('notes', 'symptom', 'diagnosis',):
             self.fields[f].widget = AutocompleteTextarea(choices=choices)
-        
+
         symptom_codes = self.instance.get_symptom_code_choices()
         self.fields['symptom_code'] = forms.ChoiceField(choices=symptom_codes,
                                                         label=_('Symptom group'))
-        
+
         if empty(self.instance.symptom_code):
             # default to the first choice
             self.instance.symptom_code = symptom_codes[0][0]
@@ -87,7 +104,7 @@ class GsxRepairForm(forms.ModelForm):
         issue_codes = self.instance.get_issue_code_choices()
         self.fields['issue_code'] = forms.ChoiceField(choices=issue_codes,
                                                       label=_('Issue code'))
-        
+
     def clean(self, *args, **kwargs):
         cd = super(GsxRepairForm, self).clean(*args, **kwargs)
         if self.instance.has_serialized_parts():
@@ -98,11 +115,11 @@ class GsxRepairForm(forms.ModelForm):
         return cd
 
     def clean_attachment(self):
-        MAX_FILESIZE = 10*1024*1024 # 10MB
+        max_filesize = 10 * 1024 * 1024  # 10MB
         from django.template.defaultfilters import filesizeformat
         f = self.cleaned_data.get('attachment')
-        if f and f.size > MAX_FILESIZE:
-            size = filesizeformat(MAX_FILESIZE)
+        if f and f.size > max_filesize:
+            size = filesizeformat(max_filesize)
             error = _('Attachment should be no larger than %s') % size
             raise forms.ValidationError(error)
 
