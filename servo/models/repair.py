@@ -99,9 +99,9 @@ class Repair(models.Model):
     Proxies service order data between our internal
     service orders and GSX repairs
     """
-    order  = models.ForeignKey(Order, editable=False, on_delete=models.PROTECT)
+    order = models.ForeignKey(Order, editable=False, on_delete=models.PROTECT)
     device = models.ForeignKey(Device, editable=False, on_delete=models.PROTECT)
-    parts  = models.ManyToManyField(ServiceOrderItem, through=ServicePart)
+    parts = models.ManyToManyField(ServiceOrderItem, through=ServicePart)
 
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     created_by = models.ForeignKey(
@@ -134,7 +134,7 @@ class Repair(models.Model):
         default=False,
         help_text=_("Repair should be reviewed by Apple before confirmation")
     )
-    confirmation = models.CharField(max_length=10, default='', editable=False)
+    confirmation = models.CharField(max_length=15, default='', editable=False)
     reference = models.CharField(
         blank=True,
         default='',
@@ -150,7 +150,11 @@ class Repair(models.Model):
         validators=[MaxLengthValidator(800)],
         help_text=_("Notes are mandatory when requesting review.")
     )
+    #  user-friendly status description from GSX
     status = models.CharField(default='', editable=False, max_length=128)
+    status_code = models.CharField(max_length=4, default='', editable=False,
+                                   choices=gsxws.repairs.REPAIR_STATUSES)
+
     attachment = models.FileField(
         upload_to='repairs',
         null=True,
@@ -361,7 +365,6 @@ class Repair(models.Model):
         if not self.order.queue:
             raise ValueError(_("Order has not been assigned to a queue"))
 
-
         repair_data = self.to_gsx()
 
         if self.repair_type == "CA":
@@ -521,6 +524,12 @@ class Repair(models.Model):
         account = user or self.created_by
         return self.gsx_account.connect(account)
 
+    def set_status_code(self, newstatus):
+        self.status_code = newstatus
+        rep = self.get_gsx_repair()
+        rep.set_status(self.status_code)
+        self.save()
+
     def set_status(self, new_status, user):
         """
         Sets the current status of this repair to new_status
@@ -532,9 +541,11 @@ class Repair(models.Model):
             self.order.notify("repair_status_changed", self.status, user)
 
     def get_status(self):
+        """Return status description of this repair."""
         return self.status if len(self.status) else _('No status')
 
     def update_status(self, user):
+        """Update status description from GSX"""
         repair = self.get_gsx_repair()
         status = repair.status().repairStatus
         self.set_status(status, user)
