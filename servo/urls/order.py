@@ -4,7 +4,7 @@ from servo.views import note
 from django.conf.urls import url
 from servo.views.order import *
 from servo.views.invoices import create_invoice
-from servo.views.gsx import create_repair, edit_repair, import_repair, delete_repair
+from servo.views.gsx import create_repair, edit_repair, import_repair
 
 
 urlpatterns = [

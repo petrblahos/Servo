@@ -133,11 +133,9 @@ def remove_part(request, repair, part):
     return render(request, "repairs/delete_part.html", data)
 
 
-def delete_repair(request, repair_id):
-    """
-    Deletes this unsubmitted GSX repair
-    """
-    repair = get_object_or_404(Repair, pk=repair_id)
+def delete_repair(request, pk):
+    """Delete this unsubmitted GSX repair."""
+    repair = get_object_or_404(Repair, pk=pk)
 
     if repair.is_submitted():
         messages.error(request, _('Submitted repairs cannot be deleted'))

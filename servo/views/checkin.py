@@ -148,14 +148,14 @@ def init_session(request):
         except KeyError:
             # not given - default to session, then auth user
             user_id = request.session.get('checkin_user', user.pk)
-        
+
         user = get_object_or_404(User, pk=user_id)
         request.session['checkin_locations'] = Location.get_checkin_list()
 
         checkin_users = User.get_checkin_group()
         queryset = checkin_users.filter(location=location)
         request.session['checkin_users'] = User.serialize(queryset)
-    
+
     request.session['checkin_user'] = user.pk
     request.session['checkin_location'] = location.pk
     request.session['checkin_user_name'] = user.get_name()
@@ -176,7 +176,7 @@ def thanks(request, order):
     try:
         request.session.delete_test_cookie()
     except KeyError:
-        pass # ignore spurious KeyError at /checkin/thanks/RJTPS/
+        pass  # ignore spurious KeyError at /checkin/thanks/RJTPS/
 
     try:
         order = Order.objects.get(url_code=order)
