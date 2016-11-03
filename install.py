@@ -46,6 +46,9 @@ print("** Setting up database tables **")
 call(['./manage.py', 'migrate'])
 call(['psql', '-c', 'ALTER SEQUENCE servo_order_id_seq RESTART WITH 12345', args['dbname'], args['dbuser']])
 
+print("** Creating directories **")
+call(['./manage.py', 'makedirs'])
+
 print("** Creating Super User **")
 call(['./manage.py', 'createsuperuser'])
 
