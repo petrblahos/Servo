@@ -10,7 +10,7 @@
 {% endblock body %}
 
 {% block footer %}
-<form action="{% url 'servo.views.order.remove_product' order.id item.id %}" method="post">
+<form action="{% url 'orders-remove_product' order.id item.id %}" method="post">
     {% csrf_token %}
     <button type="submit" class="btn btn-danger">{% trans "Delete" %}</button>
 </form>

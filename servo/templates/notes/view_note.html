@@ -30,9 +30,9 @@
     {% endfor %}
     <div class="form-actions">
         <div class="pull-right">
-            <a href="{% url 'servo.views.order.create' note_id=note.id %}" class="btn {% if note.order.id %} disabled {% endif %}">{% trans "Create Order" %}</a>
+            <a href="{% url 'orders-create_with_note' note_id=note.id %}" class="btn {% if note.order.id %} disabled {% endif %}">{% trans "Create Order" %}</a>
             <a href="{% url 'notes-delete_note' note.id %}" class="btn btn-danger" data-modal="#modal">{% trans "Delete" %}</a>
-            <a href="{% url 'servo.views.note.edit' parent=note.id %}" class="btn btn-primary">{% trans "Reply" %}</a>
+            <a href="{% url 'notes-reply' parent=note.id %}" class="btn btn-primary">{% trans "Reply" %}</a>
         </div>
     </div>
 {% endblock view_message %}

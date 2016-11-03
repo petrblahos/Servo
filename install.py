@@ -77,7 +77,7 @@ subj = "/C=%s/ST=%s/L=%s/O=%s/OU=%s/CN=%s" % (
 )
 
 call(['openssl', 'req', '-nodes', '-x509', '-newkey', 'rsa:2048',
-    '-days', '365', '-subj', subj,
-    '-keyout', 'servo.key', '-out', 'servo.crt'])
+      '-days', '365', '-subj', subj,
+      '-keyout', 'servo.key', '-out', 'servo.crt'])
 
 print("Your Servo installation is ready for action at https://%s" % args['hostname'])

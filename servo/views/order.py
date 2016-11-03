@@ -788,7 +788,7 @@ def report_device(request, pk, device_id):
 
 @permission_required('servo.change_order')
 def remove_product(request, pk, item_id):
-    order = Order.objects.get(pk=pk)
+    order = get_object_or_404(Order, pk=pk)
 
     # The following is to help those who hit Back after removing a product
     try:
