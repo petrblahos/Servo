@@ -16,7 +16,12 @@ Main features include:
 - API for integration with external systems
 - It's not FileMaker Pro
 
-![The Obligatory Screenshot](http://www.servoapp.com/img/screenshots/940/order1.png)
+
+The Obligatory Screenshots
+==========================
+![Servo Screenshot 1](http://www.servoapp.com/img/screenshots/940/order1.png)
+![Servo Screenshot 2](http://www.servoapp.com/img/screenshots/devices.png)
+![Servo Screenshot 3](http://www.servoapp.com/img/screenshots/inventory.png)
 
 
 System Requirements
