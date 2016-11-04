@@ -246,9 +246,7 @@ class Repair(models.Model):
 
     @classmethod
     def create_from_gsx(cls, confirmation, order, device, user):
-        """
-        Creates a new Repair for order with confirmation number
-        """
+        """Creates a new Repair for order with confirmation number."""
         try:
             repair = cls.objects.get(confirmation=confirmation)
             msg = {'repair': repair.confirmation, 'order': repair.order}
