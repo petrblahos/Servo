@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from random import choice
-from django.db.utils import IntegrityError
 from django.template.defaultfilters import slugify
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 
-from servo.models import Customer, Order, User, Location, GsxAccount
+from servo.models import Order, User, Location, GsxAccount
 
 
 class Command(BaseCommand):
@@ -44,18 +43,19 @@ class Command(BaseCommand):
                  'Dorothy Perry', 'Lori Powell', 'Kathryn Murphy',
                  'Judy Johnson', 'Albert Morgan', 'William Richardson',
                  'Randy Stewart', 'Roger Thompson', 'Anna Rodriguez',)
-        """
+
+        confirm = raw_input('Are you sure you want to continue [Y/N]')
+        if confirm != 'Y':
+            return
+
         print 'Munging customer names of open orders...'
         for i in Order.objects.filter(state=Order.STATE_QUEUED):
             if i.customer:
                 i.customer.name = choice(names)
                 i.customer.save()
-        """
+
         print 'Munging technician names'
         users = User.objects.exclude(username='filipp')
-        newnames = [x.split()[0].lower() for x in names]
-        oldnames = users.values_list("username", flat=True)
-        idx = 0
 
         for i in users:
             i.first_name, i.last_name = choice(names).split()
@@ -65,7 +65,6 @@ class Command(BaseCommand):
         print 'Munging location names'
         a = 65
         for i in Location.objects.all():
-            #i.title = 'Location %s' % chr(a)
             i.email = slugify(i.title) + '@example.com'
             i.city = 'Cupertino'
             i.phone = '0451 202 7' + str(a)
