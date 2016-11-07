@@ -6,6 +6,7 @@ from django.test import TestCase
 from servo.models.common import Configuration
 from servo.models.order import Order
 from servo.models.account import User
+from servo.models.queue import Queue
 
 
 class ConfigurationTests(TestCase):
@@ -23,6 +24,12 @@ class ServiceOrderTests(TestCase):
         o.save()
         o.check_in(u)
         self.assertEquals(o.location, o.checkin_location)
+
+
+class QueueTests(TestCase):
+    def test_absolute_url(self):
+        q = Queue.objects.get(pk=1)
+        self.assertRegexpMatches(q.get_absolute_url(), r'\?queue=\d$')
 
 
 if __name__ == '__main__':

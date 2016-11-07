@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from datetime import timedelta
-from django.conf import settings
 
 from django.db import models
 from django.utils import timezone
@@ -160,7 +159,8 @@ class Queue(models.Model):
         return reverse('admin-edit_queue', args=[self.pk])
 
     def get_absolute_url(self):
-        return reverse('orders-list_queue', args=[self.pk])
+        p = '?queue=%d' % self.pk
+        return reverse('orders-index') + p
 
     def get_order_count(self, max_state=2):
         count = self.order_set.filter(state__lt=max_state).count()
@@ -260,10 +260,12 @@ class QueueStatus(models.Model):
         """
         Gets the green time limit for this QS
         """
-        return timezone.now() + timedelta(seconds=self.limit_green*self.limit_factor)
+        sec = self.limit_green * self.limit_factor
+        return timezone.now() + timedelta(seconds=sec)
 
     def get_yellow_limit(self):
-        return timezone.now() + timedelta(seconds=self.limit_yellow*self.limit_factor)
+        sec = self.limit_yellow * self.limit_factor
+        return timezone.now() + timedelta(seconds=sec)
 
     def __unicode__(self):
         return self.status.title
