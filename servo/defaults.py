@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
+"""Contains callables for model default values."""
 
-"""
-defaults.py
-Contains callables for model default values
-"""
 import uuid
 import settings
 import local_settings
@@ -12,9 +9,10 @@ from decimal import Decimal
 from django.db import connection
 from django.core.cache import cache
 
+
 def _get(key):
     cached = cache.get('defaults', {})
-    
+
     if not cached.get(key):
         cursor = connection.cursor()
         cursor.execute("SELECT key, value FROM servo_configuration")
@@ -25,27 +23,36 @@ def _get(key):
 
     return cached.get(key)
 
+
 def country():
+    """Default country code for this installation."""
     return local_settings.INSTALL_COUNTRY
+
 
 def site_id():
     return settings.SITE_ID
 
+
 def locale():
     return settings.INSTALL_LOCALE
+
 
 def uid():
     return str(uuid.uuid1()).upper()
 
+
 def subject():
     return _get('default_subject')
+
 
 def vat():
     val = _get('pct_vat') or 0.0
     return Decimal(val)
 
+
 def margin(sum=0.0):
     return _get('pct_margin') or 0.0
+
 
 def gsx_account():
     return _get('gsx_account')

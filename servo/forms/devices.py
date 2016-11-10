@@ -12,12 +12,10 @@ product_lines = [(k, x['name']) for k, x in Device.PRODUCT_LINES.items()]
 
 class DeviceSearchForm(forms.Form):
     product_line = forms.MultipleChoiceField(
-        #widget=forms.CheckboxSelectMultiple,
         choices=product_lines,
         required=False
     )
     warranty_status = forms.MultipleChoiceField(
-        #widget=forms.CheckboxSelectMultiple,
         choices=Device.WARRANTY_CHOICES,
         required=False,
     )
@@ -73,4 +71,3 @@ class DeviceUploadForm(forms.Form):
 
 class DiagnosticsForm(forms.Form):
     pass
-
