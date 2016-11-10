@@ -14,7 +14,7 @@ from django.views.decorators.cache import cache_page
 
 from servo.lib.utils import paginate
 from servo.models import (Device, Order, Product, GsxAccount,
-                         ServiceOrderItem, Customer,)
+                          ServiceOrderItem, Customer,)
 from servo.forms.devices import DeviceForm, DeviceUploadForm, DeviceSearchForm
 
 
@@ -153,6 +153,8 @@ def edit_device(request, pk=None, product_line=None, model=None):
                             pk=device.pk,
                             product_line=device.product_line,
                             model=device.slug)
+        else:
+            messages.error(request, form.errors)
 
     data = prep_detail_view(request, pk, product_line, model)
     data['form'] = form
