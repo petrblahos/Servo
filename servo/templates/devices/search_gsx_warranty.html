@@ -14,7 +14,7 @@
       <dt>{% trans "Warranty Status" %}</dt>
       <dd>{{ d.get_warranty_status_display }}</dd>
       <dt>{% trans "Purchase Date" %}</dt>
-      <dd>{{ d.purchased_on|date:"SHORT_DATE_FORMAT"|default:"-" }}, {{ d.purchase_country|default:"-" }}</dd>
+      <dd>{{ d.purchased_on|date:"SHORT_DATE_FORMAT"|default:"-" }}, {{ d.get_purchase_country|default:"-" }}</dd>
       <dt>{% trans "Serial Number" %}</dt>
       <dd>{{ d.sn }}</dd>
       <dt>{% trans "Configration" %}</dt>

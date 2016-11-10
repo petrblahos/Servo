@@ -27,9 +27,8 @@ from servo.models import GsxAccount, Product, DeviceGroup, TaggedItem
 
 
 class Device(models.Model):
-    """
-    The serviceable device
-    """
+    """The serviceable device."""
+
     # @TODO: unique=True would be nice, but complicated...
     sn = models.CharField(
         blank=True,
@@ -104,15 +103,15 @@ class Device(models.Model):
     )
 
     WARRANTY_CHOICES = (
-        ('QP',  _("Quality Program")),
-        ('CS',  _("Customer Satisfaction")),
+        ('QP', _("Quality Program")),
+        ('CS', _("Customer Satisfaction")),
         ('ALW', _("Apple Limited Warranty")),
         ('APP', _("AppleCare Protection Plan")),
-        ('CC',  _("Custom Bid Contracts")),
-        ('CBC', _("Custom Bid Contracts")), # sometimes CC, sometimes CBC?
+        ('CC', _("Custom Bid Contracts")),
+        ('CBC', _("Custom Bid Contracts")),  # sometimes CC, sometimes CBC?
         ('WTY', _("3'rd Party Warranty")),
         ('OOW', _("Out Of Warranty (No Coverage)")),
-        ('NA',  _("Unknown")),
+        ('NA', _("Unknown")),
     )
 
     warranty_status = models.CharField(
@@ -314,8 +313,8 @@ class Device(models.Model):
             gsx_act = GsxAccount.get_default_account()
             ship_to = gsx_act.ship_to
 
-        wty     = product.warranty(ship_to=ship_to)
-        model   = product.model()
+        wty = product.warranty(ship_to=ship_to)
+        model = product.model()
 
         if device is None:
             # serialNumber may sometimes come back empty
@@ -328,30 +327,30 @@ class Device(models.Model):
             device.notes = wty.notes or ''
             device.notes += wty.csNotes or ''
 
-        device.has_onsite       = product.has_onsite
-        device.is_vintage       = product.is_vintage
-        device.description      = product.description
-        device.fmip_active      = product.fmip_is_active
+        device.has_onsite = product.has_onsite
+        device.is_vintage = product.is_vintage
+        device.description = product.description
+        device.fmip_active = product.fmip_is_active
 
-        device.slug             = slugify(device.description)
-        device.configuration    = wty.configDescription or ''
-        device.purchase_country = wty.purchaseCountry or ''
+        device.slug = slugify(device.description)
+        device.configuration = wty.configDescription or ''
+        device.purchase_country = countries.by_name(wty.purchaseCountry)
 
-        device.config_code      = model.configCode
-        device.product_line     = model.productLine.replace(" ", "")
+        device.config_code = model.configCode
+        device.product_line = model.productLine.replace(" ", "")
         device.parts_and_labor_covered = product.parts_and_labor_covered
 
-        device.sla_description      = wty.slaGroupDescription or ''
-        device.contract_start_date  = wty.contractCoverageStartDate
-        device.contract_end_date    = wty.contractCoverageEndDate
-        device.onsite_start_date    = wty.onsiteStartDate
-        device.onsite_end_date      = wty.onsiteEndDate
+        device.sla_description = wty.slaGroupDescription or ''
+        device.contract_start_date = wty.contractCoverageStartDate
+        device.contract_end_date = wty.contractCoverageEndDate
+        device.onsite_start_date = wty.onsiteStartDate
+        device.onsite_end_date = wty.onsiteEndDate
 
         if wty.estimatedPurchaseDate:
             device.purchased_on = wty.estimatedPurchaseDate
 
-        device.image_url         = wty.imageURL or ''
-        device.manual_url        = wty.manualURL or ''
+        device.image_url = wty.imageURL or ''
+        device.manual_url = wty.manualURL or ''
         device.exploded_view_url = wty.explodedViewURL or ''
 
         if wty.warrantyStatus:
@@ -370,9 +369,7 @@ class Device(models.Model):
         return device
 
     def is_mac(self):
-        """
-        Returns True if this is a Mac
-        """
+        """Return True if this is a Mac."""
         p = gsxws.Product(self.sn)
         p.description = self.description
         return p.is_mac
@@ -491,18 +488,18 @@ class Device(models.Model):
 
     def get_purchase_country(self):
         """
-        Returns device's purchase country
-        can be 2-letter code (from checkin) or
-        full country name (from GSX)
+        Return legacy stored country name.
+        Or name corresponding to country code
         """
-        from django_countries import countries
+        pc = self.purchase_country
 
-        if len(self.purchase_country) > 2:
-            return self.purchase_country
+        if len(pc) > 2:
+            return pc
 
-        return countries.countries.get(self.purchase_country, '')
+        return countries.name(pc)
 
     def run_test(self, test_id, request):
+        """Run diagnostics on this device."""
         GsxAccount.default(request.user)
         diags = diagnostics.Diagnostics(self.sn)
         diags.shipTo = request.user.location.gsx_shipto
@@ -510,15 +507,14 @@ class Device(models.Model):
         return diags.run_test()
 
     def fetch_tests(self, request):
+        """Return applicable test suites."""
         GsxAccount.default(request.user)
         diags = diagnostics.Diagnostics(self.sn)
         diags.shipTo = request.user.location.gsx_shipto
         return diags.fetch_suites()
 
     def get_gsx_repairs(self):
-        """
-        Returns this device's GSX repairs, if any
-        """
+        """Return this device's GSX repairs, if any."""
         device = gsxws.Product(self.get_sn())
         results = []
 
@@ -529,7 +525,7 @@ class Device(models.Model):
             d['customerName'] = p.customerName.encode('utf-8')
             d['repairStatus'] = p.repairStatus
             results.append(d)
-            
+
         return results
 
     def __unicode__(self):

@@ -7,6 +7,19 @@ from servo.models.common import Configuration
 from servo.models.order import Order
 from servo.models.account import User
 from servo.models.queue import Queue
+from servo.models.device import Device
+
+
+class DeviceTests(TestCase):
+    def test_purchase_country_code(self):
+        device = Device()
+        device.purchase_country = 'SE'
+        self.assertEquals(device.get_purchase_country(), 'Sweden')
+
+    def test_purchase_country(self):
+        device = Device()
+        device.purchase_country = 'Sweden'
+        self.assertEquals(device.get_purchase_country(), 'Sweden')
 
 
 class ConfigurationTests(TestCase):
