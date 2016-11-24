@@ -188,7 +188,7 @@ class Device(models.Model):
         help_text=_('Device is considered vintage in GSX')
     )
     fmip_active = models.BooleanField(default=False, editable=False)
-    
+
     def is_apple_device(self):
         """
         Checks if this is a valid Apple device SN
@@ -395,7 +395,7 @@ class Device(models.Model):
             return self.photo.url
         except ValueError:
             return self.get_image_url()
-            
+
     def get_fmip_status(self):
         """
         Returns the translated FMiP status

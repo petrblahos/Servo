@@ -382,7 +382,16 @@ class Note(MPTTModel):
         if len(smtp_host) > 1:
             settings.EMAIL_PORT = int(smtp_host[1])
 
-        settings.EMAIL_USE_TLS = config.get('smtp_ssl')
+        if config.get('SMTP_ENCRYPTION') == 'TLS':
+            settings.EMAIL_USE_TLS = True
+
+        if config.get('SMTP_ENCRYPTION') == 'SSL':
+            settings.EMAIL_USE_SSL = True
+
+        if config.get('SMTP_ENCRYPTION') == 'OFF':
+            settings.EMAIL_USE_SSL = False
+            settings.EMAIL_USE_TLS = False
+
         settings.EMAIL_HOST_USER = str(config.get('smtp_user'))
         settings.EMAIL_HOST_PASSWORD = str(config.get('smtp_password'))
 
@@ -630,9 +639,8 @@ class Article(models.Model):
         ('LOW',     _('Low')),
     )
     priority = models.CharField(max_length=128,
-        choices=PRIORITY_CHOICES,
-        default=PRIORITY_CHOICES[0][0]
-    )
+                                choices=PRIORITY_CHOICES,
+                                default=PRIORITY_CHOICES[0][0])
     url = models.URLField(default='')
     product_model = ArrayField(models.CharField(max_length=128),
                                null=True,

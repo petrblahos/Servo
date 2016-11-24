@@ -474,7 +474,16 @@ class SettingsForm(BaseForm):
         label=_('Password'),
         widget=forms.PasswordInput()
     )
-    smtp_ssl = forms.BooleanField(initial=True, required=False, label=_('Use SSL'))
+
+    ENCRYPTION_CHOICES = (
+        ('OFF', _('None')),
+        ('SSL', 'SSL'),
+        ('TLS', 'TLS'),
+    )
+    smtp_encryption = forms.ChoiceField(choices=ENCRYPTION_CHOICES,
+                                        initial='OFF',
+                                        required=False,
+                                        label=_('Encryption'))
 
     sms_gateway = forms.ChoiceField(
         label=_('SMS Gateway'),
