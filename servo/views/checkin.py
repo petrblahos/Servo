@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 
-import json
 import locale
 
-from gsxws import products, GsxError
+from gsxws import GsxError
 
 from django.conf import settings
-from django.http import HttpResponse
 from django.contrib import messages
 from django.core.cache import cache
 
@@ -19,12 +17,13 @@ from django.core.exceptions import ValidationError, PermissionDenied
 from servo.lib.utils import json_response
 from servo.views.order import put_on_paper
 from servo.validators import apple_sn_validator
+from servo.exceptions import ConfigurationError
 from servo.models import (User, Device, GsxAccount, Order,
                           Customer, Location, Note, Attachment,
                           Configuration, ChecklistItem, Tag,)
 from servo.forms import (SerialNumberForm, AppleSerialNumberForm,
                          DeviceForm, IssueForm, CustomerForm,
-                         QuestionForm, AttachmentForm, StatusCheckForm,)
+                         AttachmentForm, StatusCheckForm,)
 
 
 def find_device(request):
@@ -34,7 +33,7 @@ def find_device(request):
 
     try:
         apple_sn_validator(device.sn)
-    except Exception as e: # not an Apple serial number
+    except Exception as e:  # not an Apple serial number
         return render(request, "checkin/device_form.html", locals())
 
     try:
@@ -60,6 +59,7 @@ def find_customer(request, phone):
 
 
 def init_locale(request):
+    """Initialize locale for the check-in interface."""
     lc = settings.INSTALL_LOCALE.split('.')
     locale.setlocale(locale.LC_TIME, lc)
     locale.setlocale(locale.LC_NUMERIC, lc)
@@ -113,14 +113,25 @@ def get_device(request, sn):
 
 
 def init_session(request):
-    # initialize some basic vars
+    """
+    Initialize the session for the check-in interface.
+
+    Only run for GET requests
+    """
     if not request.user.is_authenticated():
         request.session.flush()
+
+    if not Configuration.checkin_enabled():
+        raise ConfigurationError(_('Check-in interface not enabled'))
 
     # initialize locale
     init_locale(request)
 
-    request.session['checkin_device']   = None
+    # set test cookie
+    request.session.set_test_cookie()
+
+    # initialize vars
+    request.session['checkin_device'] = None
     request.session['checkin_customer'] = None
 
     user = User.get_checkin_user()
@@ -174,11 +185,6 @@ def thanks(request, order):
     title = _('Done!')
 
     try:
-        request.session.delete_test_cookie()
-    except KeyError:
-        pass  # ignore spurious KeyError at /checkin/thanks/RJTPS/
-
-    try:
         order = Order.objects.get(url_code=order)
     except Order.DoesNotExist:
         messages.error(request, _('Order does not exist'))
@@ -188,9 +194,7 @@ def thanks(request, order):
 
 
 def get_customer(request):
-    """
-    Returns the selected customer data
-    """
+    """Return the selected customer data."""
     if not request.user.is_authenticated():
         raise PermissionDenied
 
@@ -212,9 +216,7 @@ def get_customer(request):
 
 
 def status(request):
-    """
-    Status checking through the checkin
-    """
+    """Check service order status through the checkin."""
     title = _('Repair Status')
 
     if request.GET.get('code'):
@@ -239,11 +241,13 @@ def status(request):
 
 
 def print_confirmation(request, code):
+    """Output the order confirmation to the user."""
     order = get_object_or_404(Order, url_code=code)
     return put_on_paper(request, order.pk)
 
 
 def terms(request):
+    """Show terms of service."""
     conf = Configuration.conf()
     return render(request, 'checkin/terms.html', locals())
 
@@ -251,19 +255,18 @@ def terms(request):
 @never_cache
 def index(request):
     """
-    The checkin page
+    Render the checkin homepage.
+
     @FIXME: would be nice to break this into smaller chunks...
     """
-
-    request.session.set_test_cookie()
-    if not request.session.test_cookie_worked():
-        return
-
     if request.method == 'GET':
-        init_session(request)
-        
-    title = _('Service Order Check-In')
+        try:
+            init_session(request)
+        except ConfigurationError as e:
+            error = {'message': e}
+            return render(request, 'checkin/error.html', error)
 
+    title = _('Service Order Check-In')
     dcat = request.GET.get('d', 'mac')
     dmap = {
         'mac'       : _('Mac'),
@@ -285,9 +288,15 @@ def index(request):
 
     tags = Tag.objects.filter(type="order")
     device_form = DeviceForm(instance=device)
-    customer_form =  CustomerForm(request)
+    customer_form = CustomerForm(request)
 
     if request.method == 'POST':
+
+        if not request.session.test_cookie_worked():
+            error = {'message': _('Please enable cookies to use this application.')}
+            return render(request, 'checkin/error.html', error)
+        else:
+            request.session.delete_test_cookie()
 
         sn_form = SerialNumberForm(request.POST)
         issue_form = IssueForm(request.POST, request.FILES)
@@ -309,7 +318,7 @@ def index(request):
                 customer = Customer()
 
             name = u'{0} {1}'.format(cdata['fname'], cdata['lname'])
-            
+
             if len(cdata['company']):
                 name += ', ' + cdata['company']
 
@@ -341,7 +350,7 @@ def index(request):
             device.purchased_on = ddata['purchased_on']
             device.purchase_country = ddata['purchase_country']
             device.save()
-            
+
             order.add_device(device, user)
 
             note = Note(created_by=user, body=idata['issue_description'])
