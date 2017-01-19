@@ -497,6 +497,7 @@ class Location(models.Model):
 
     @classmethod
     def get_checkin_list(cls):
+        """List service locations that are marked for check-in."""
         results = []
         for l in cls.objects.filter(checkin=True):
             results.append({'pk': l.pk, 'name': l.title})
@@ -650,6 +651,10 @@ class Configuration(models.Model):
             cache.set('config', config)
 
         return config.get(key) if key else config
+
+    @classmethod
+    def checkin_enabled(cls):
+        return cls.conf('checkin_enable')
 
     def save(self, *args, **kwargs):
         config = super(Configuration, self).save(*args, **kwargs)

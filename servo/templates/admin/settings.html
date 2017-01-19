@@ -13,7 +13,7 @@
     <li><a href="#tab7" data-toggle="tab">{% trans "GSX" %}</a></li>
     <li><a href="#tab3" data-toggle="tab">{% trans "Outgoing Mail" %}</a></li>
     <li><a href="#tab4" data-toggle="tab">{% trans "Incoming Mail" %}</a></li>
-    <li><a href="#tab5" data-toggle="tab">{% trans "Text Messages" %}</a></li>
+    <li><a href="#tab5" data-toggle="tab">{% trans "SMS" %}</a></li>
     <li><a href="#tab6" data-toggle="tab">{% trans "Check-in" %}</a></li>
   </ul>
   <div class="tab-content">
@@ -92,6 +92,7 @@
       {% endif %}
     </div>
     <div class="tab-pane" id="tab6">
+      {% include "form_field_snippet.html" with field=form.checkin_enable %}
       {% include "form_field_snippet.html" with field=form.checkin_user %}
       {% include "form_field_snippet.html" with field=form.checkin_group %}
       {% include "form_field_snippet.html" with field=form.checkin_queue %}

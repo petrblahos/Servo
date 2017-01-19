@@ -136,17 +136,16 @@ class QueueForm(BaseModelForm):
 
     gsx_soldto = forms.ChoiceField(required=False, choices=())
     users = forms.ModelMultipleChoiceField(queryset=User.active.all(),
-        widget=forms.CheckboxSelectMultiple,
-        required=False
-    )
+                                           widget=forms.CheckboxSelectMultiple,
+                                           required=False)
 
     class Meta:
         model = Queue
         exclude = ('statuses',)
         widgets = {
-            'description'   : forms.Textarea(attrs={'rows': 4}),
-            'keywords'      : forms.Textarea(attrs={'rows': 4}),
-            'locations'     : forms.CheckboxSelectMultiple,
+            'description': forms.Textarea(attrs={'rows': 4}),
+            'keywords': forms.Textarea(attrs={'rows': 4}),
+            'locations': forms.CheckboxSelectMultiple,
         }
 
     def __init__(self, *args, **kwargs):
@@ -172,7 +171,7 @@ class QueueForm(BaseModelForm):
             return
 
         ftype = file_type(tpl.file.read())
-        
+
         if ftype != 'text/html':
             raise forms.ValidationError(_('Print tempates must be in HTML format'))
 
@@ -292,6 +291,13 @@ class SettingsForm(BaseForm):
     )
 
     # start checkin fields
+    checkin_enable = forms.BooleanField(
+        initial=True,
+        required=False,
+        label=_("Enable check-in interface"),
+        help_text=_("Uncheck to disable the check-in interface")
+    )
+
     checkin_user = forms.ModelChoiceField(
         required=False,
         label=_('User Account'),
@@ -339,11 +345,13 @@ class SettingsForm(BaseForm):
         initial=True,
         required=False,
         label=_('Require device password'),
+        help_text=_('Check to make the "device password" field mandatory'),
     )
     checkin_require_condition = forms.BooleanField(
         initial=True,
         required=False,
         label=_('Require device condition'),
+        help_text=_('Check to make the "device condition" field mandatory'),
     )
 
     # end checkin fields
