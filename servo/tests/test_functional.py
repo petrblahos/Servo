@@ -1,15 +1,18 @@
 # -*- coding: utf-8 -*-
 
+import os
 import unittest
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 
 
-@unittest.skip
 class NewVisitorTest(unittest.TestCase):
     def setUp(self):
         self.url = 'http://localhost:8000/checkin/'
-        self.browser = webdriver.Firefox()
+        fp = webdriver.FirefoxProfile()
+        if os.getenv('DISABLE_COOKIES'):
+            fp.set_preference('network.cookie.cookieBehavior', 2)
+        self.browser = webdriver.Firefox(firefox_profile=fp)
         self.browser.implicitly_wait(3)
         self.browser.get(self.url)
 
@@ -80,7 +83,11 @@ class NewVisitorTest(unittest.TestCase):
 
     def test_can_checkin_sn(self):
         # Customer logs in to check-in
-        self.assertIn('Service Order Check-In', self.browser.title)
+        if os.getenv('CHECKIN_DISABLED'):
+            self.assertIn('An error occurred', self.browser.title)
+            return
+
+        self.assertIn('Service Order', self.browser.title)
 
         # customer checks warranty status...
         snfield = self.browser.find_element_by_id('id_sn')
@@ -104,7 +111,7 @@ class NewVisitorTest(unittest.TestCase):
 
         # Check that it actually worked
         btn = self.browser.find_element_by_class_name('btn-large')
-        self.assertEqual(btn.text, 'Print')
+        self.assertEqual(btn.text, 'Skapa ny')
 
 
 if __name__ == '__main__':
