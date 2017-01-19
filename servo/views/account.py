@@ -83,13 +83,17 @@ def orders(request):
 
 
 def login(request):
-    """
-    User trying to log in
-    """
+    """User trying to log in."""
     title = _("Sign In")
     form = LoginForm()
 
     if 'username' in request.POST:
+
+        if request.session.test_cookie_worked():
+            request.session.delete_test_cookie()
+        else:
+            error = {'message': _('Please enable cookies to use this system')}
+            return render(request, 'checkin/error.html', error)
 
         form = LoginForm(request.POST)
 
@@ -120,6 +124,7 @@ def login(request):
         else:
             messages.error(request, _("Invalid input for login"))
 
+    request.session.set_test_cookie()
     return render(request, "accounts/login.html", locals())
 
 
