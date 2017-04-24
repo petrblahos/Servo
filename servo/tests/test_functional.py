@@ -4,6 +4,7 @@ import os
 import unittest
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import Select
 
 
 class NewVisitorTest(unittest.TestCase):
@@ -104,6 +105,10 @@ class NewVisitorTest(unittest.TestCase):
         # Customer fills in the condition
         field = self.browser.find_element_by_id('id_condition')
         field.send_keys('Like new')
+
+        # Employee puts order in non-default queue
+        select = Select(self.browser.find_element_by_id('id_queue'))
+        select.select_by_index(1)
 
         # Submit the repair
         submit_button = self.browser.find_element_by_id('id_btn_submit')

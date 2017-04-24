@@ -6,10 +6,11 @@
 {% block main %}
 <div class="container-narrow">
   <div class="jumbotron">
-    <img src="{{ STATIC_URL }}/images/sadmac.png"/>
-    <p class="lead">{% trans "It appears that an error has occurred." %}</p>
+    <img src="{{ STATIC_URL }}/images/sadmac.png" alt="{% trans "An error occurred" %}" title="{% trans "An error occurred" %}"/>
+    <p class="lead">{% trans "An error occurred." %}</p>
     <p>{{ message }}</p>
-    <a class="btn btn-large btn-success" href="{% url 'checkin-index' %}"><i class="icon-refresh icon-white"></i> {% trans "Try again" %}</a>
+    <a class="btn btn-large btn-success" href="{{ url }}"><i class="glyphicon glyphicon-repeat"></i> {% trans "Try again" %}</a>
+    <a class="btn btn-large btn-default" href="{% url 'accounts-login' %}"><i class="icon-refresh icon-white"></i> {% trans "Return to login page" %}</a>
   </div>
 </div>
 {% endblock main %}

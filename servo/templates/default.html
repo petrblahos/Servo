@@ -1,21 +1,21 @@
 {% load servo_tags %}
 {% load humanize %}
-{% load cache %}
+{% load static %}
 {% load i18n %}
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" type="image/png" href="{{ STATIC_URL }}images/favicon.png">
-  <link rel="apple-touch-icon" type="image/png" href="{{ STATIC_URL }}images/apple-touch-icon.png">
-  <link href="{{ STATIC_URL }}js/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-  <link href="{{ STATIC_URL }}js/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">
-  <link href="{{ STATIC_URL }}css/bootstrap-datetimepicker.min.css" rel="stylesheet">
-  <link href="{{ STATIC_URL }}css/bootstrap-sortable.css" rel="stylesheet">
-  <link href="{{ STATIC_URL }}css/glyphicons.css" rel="stylesheet">
-  <link href="{{ STATIC_URL }}css/halflings.css" rel="stylesheet">
-  <link href="{{ STATIC_URL }}css/servo.css" rel="stylesheet">
+  <link rel="icon" type="image/png" href="{% static "images/favicon.png" %}">
+  <link rel="apple-touch-icon" type="image/png" href="{% static "images/apple-touch-icon.png" %}">
+  <link href="{% static "js/bootstrap/css/bootstrap.min.css" %}" rel="stylesheet">
+  <link href="{% static "js/bootstrap/css/bootstrap-responsive.min.css" %}" rel="stylesheet">
+  <link href="{% static "css/bootstrap-datetimepicker.min.css" %}" rel="stylesheet">
+  <link href="{% static "css/bootstrap-sortable.css" %}" rel="stylesheet">
+  <link href="{% static "css/glyphicons.css" %}" rel="stylesheet">
+  <link href="{% static "css/halflings.css" %}" rel="stylesheet">
+  <link href="{% static "css/servo.css" %}" rel="stylesheet">
   <title>{{ title }} | Servo</title>
 </head>
 <body>

@@ -51,7 +51,7 @@
     </ul>
   </div>
   <div class="media-body">
-    <h5 class="media-heading">{{ node.get_sender_name }} {{ node.created_at|relative_date }}
+    <h5 class="media-heading">{{ node.get_sender_name }} <span class="muted">{{ node.created_at|relative_date }}</span>
     {% if node.escalation.is_submitted %}
       <small class="muted"><i class="icon-globe"></i> {{ node.escalation.escalation_id }}</small>
     {% endif %}

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import csv
-import pytz
 from datetime import date
 
 from django.contrib import auth
@@ -23,9 +22,7 @@ from servo.forms.account import ProfileForm, RegistrationForm, LoginForm
 
 
 def settings(request):
-    """
-    User editing their profile preferences
-    """
+    """User editing their profile."""
     title = _("Profile Settings")
     form = ProfileForm(instance=request.user)
 
@@ -37,7 +34,7 @@ def settings(request):
             user = form.save()
             messages.success(request, _("Settings saved"))
             User.refresh_nomail()
-            
+
             if form.cleaned_data['password1']:
                 request.user.set_password(form.cleaned_data['password1'])
                 request.user.save()
@@ -89,13 +86,14 @@ def login(request):
 
     if 'username' in request.POST:
 
+        form = LoginForm(request.POST)
+
         if request.session.test_cookie_worked():
             request.session.delete_test_cookie()
         else:
-            error = {'message': _('Please enable cookies to use this system')}
-            return render(request, 'checkin/error.html', error)
-
-        form = LoginForm(request.POST)
+            message = _('Please enable cookies to use this system')
+            url = request.path
+            return render(request, 'checkin/error.html', locals())
 
         if form.is_valid():
             user = auth.authenticate(

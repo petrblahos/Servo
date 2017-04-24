@@ -112,7 +112,8 @@ class Note(MPTTModel):
 
     is_reported = models.BooleanField(
         default=False,
-        verbose_name=_("Report")
+        verbose_name=_("Report"),
+        help_text=_('Show this note on the confirmation printout')
     )
     is_read = models.BooleanField(
         default=True,
@@ -178,7 +179,7 @@ class Note(MPTTModel):
 
     def zip_attachments(self):
         pass
-
+    
     def get_default_sender(self):
         return Configuration.get_default_sender(self.created_by)
 

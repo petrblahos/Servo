@@ -2,7 +2,7 @@
 {% load i18n %}
 
 {% block content %}
-<img src="{{ STATIC_URL }}images/logo_servoapp.png" class="servo-logo" alt=""/>
+<img src="{{ STATIC_URL }}images/logo_servoapp.png" class="servo-logo" alt="Servo Logo"/>
 <form action="{% url "accounts-login" %}" method="post" accept-charset="utf-8">
   {% csrf_token %}
   <div class="input-prepend">

@@ -295,7 +295,7 @@ class SettingsForm(BaseForm):
         initial=True,
         required=False,
         label=_("Enable check-in interface"),
-        help_text=_("Uncheck to disable the check-in interface")
+        help_text=_("Uncheck to disable the check-in interface completely")
     )
 
     checkin_user = forms.ModelChoiceField(

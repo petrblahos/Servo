@@ -21,15 +21,13 @@ from servo.exceptions import ConfigurationError
 from servo.models import (User, Device, GsxAccount, Order,
                           Customer, Location, Note, Attachment,
                           Configuration, ChecklistItem, Tag,)
-from servo.forms import (SerialNumberForm, AppleSerialNumberForm,
-                         DeviceForm, IssueForm, CustomerForm,
-                         AttachmentForm, StatusCheckForm,)
+from servo import forms
 
 
 def find_device(request):
     device = Device(sn=request.GET['sn'])
     device.description = _('Other Device')
-    device_form = DeviceForm(instance=device)
+    device_form = forms.DeviceForm(instance=device)
 
     try:
         apple_sn_validator(device.sn)
@@ -38,7 +36,7 @@ def find_device(request):
 
     try:
         device = get_device(request, device.sn)
-        device_form = DeviceForm(instance=device)
+        device_form = forms.DeviceForm(instance=device)
     except GsxError as e:
         error = e
 
@@ -221,7 +219,7 @@ def status(request):
 
     if request.GET.get('code'):
         timeline = []
-        form = StatusCheckForm(request.GET)
+        form = forms.StatusCheckForm(request.GET)
         if form.is_valid():
             code = form.cleaned_data['code']
             try:
@@ -235,7 +233,7 @@ def status(request):
                 messages.error(request, _(u'Order %s not found') % code)
             return render(request, "checkin/status-show.html", locals())
     else:
-        form = StatusCheckForm()
+        form = forms.StatusCheckForm()
 
     return render(request, "checkin/status.html", locals())
 
@@ -269,26 +267,26 @@ def index(request):
     title = _('Service Order Check-In')
     dcat = request.GET.get('d', 'mac')
     dmap = {
-        'mac'       : _('Mac'),
-        'iphone'    : _('iPhone'),
-        'ipad'      : _('iPad'),
-        'ipod'      : _('iPod'),
-        'acc'       : _('Apple Accessory'),
-        'beats'     : _('Beats Products'),
-        'other'     : _('Other Devices'),
+        'mac': _('Mac'),
+        'iphone': _('iPhone'),
+        'ipad': _('iPad'),
+        'ipod': _('iPod'),
+        'acc': _('Apple Accessory'),
+        'beats': _('Beats Products'),
+        'other': _('Other Devices'),
     }
 
-    issue_form = IssueForm()
+    issue_form = forms.IssueForm()
     device = Device(description=dmap[dcat])
 
     if dcat in ('mac', 'iphone', 'ipad', 'ipod'):
-        sn_form = AppleSerialNumberForm()
+        sn_form = forms.AppleSerialNumberForm()
     else:
-        sn_form = SerialNumberForm()
+        sn_form = forms.SerialNumberForm()
 
     tags = Tag.objects.filter(type="order")
-    device_form = DeviceForm(instance=device)
-    customer_form = CustomerForm(request)
+    device_form = forms.DeviceForm(instance=device)
+    customer_form = forms.CustomerForm(request)
 
     if request.method == 'POST':
 
@@ -298,10 +296,10 @@ def index(request):
         else:
             request.session.delete_test_cookie()
 
-        sn_form = SerialNumberForm(request.POST)
-        issue_form = IssueForm(request.POST, request.FILES)
-        customer_form = CustomerForm(request, request.POST)
-        device_form = DeviceForm(request.POST, request.FILES)
+        sn_form = forms.SerialNumberForm(request.POST)
+        issue_form = forms.IssueForm(request.POST, request.FILES)
+        customer_form = forms.CustomerForm(request, request.POST)
+        device_form = forms.DeviceForm(request.POST, request.FILES)
 
         if device_form.is_valid() and issue_form.is_valid() and customer_form.is_valid():
 
@@ -322,8 +320,8 @@ def index(request):
             if len(cdata['company']):
                 name += ', ' + cdata['company']
 
-            customer.name  = name
-            customer.city  = cdata['city']
+            customer.name = name
+            customer.city = cdata['city']
             customer.phone = cdata['phone']
             customer.email = cdata['email']
             customer.phone = cdata['phone']
@@ -362,7 +360,7 @@ def index(request):
             if ddata.get('pop'):
                 f = {'content_type': Attachment.get_content_type('note').pk}
                 f['object_id'] = note.pk
-                a = AttachmentForm(f, {'content': ddata['pop']})
+                a = forms.AttachmentForm(f, {'content': ddata['pop']})
                 a.save()
 
             if request.POST.get('tags'):
@@ -405,6 +403,10 @@ def index(request):
                 order.set_accessories(accs, device)
 
             redirect_to = thanks
+
+            # Move to custom queue, if set
+            if device_form.cleaned_data.get('queue'):
+                order.set_queue(device_form.cleaned_data['queue'], user)
 
             """
             if request.user.is_authenticated():
