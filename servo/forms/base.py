@@ -39,9 +39,9 @@ class TextInput(forms.TextInput):
 
 class AutocompleteCharField(forms.CharField):
     widget = forms.TextInput(attrs={
-        'class'         : "input typeahead",
-        'data-provide'  : "typeahead"
-        })
+        'class': "input typeahead",
+        'data-provide': "typeahead"
+    })
 
     def __init__(self, values, *args, **kwargs):
         super(AutocompleteCharField, self).__init__(*args, **kwargs)
@@ -75,7 +75,7 @@ class SearchFieldInput(forms.TextInput):
     def render(self, name, value, attrs=None):
 
         field = super(SearchFieldInput, self).render(name, value, attrs)
-        final_attrs = self.build_attrs(attrs, name=name)
+        final_attrs = self.build_attrs(attrs)
 
         output = format_html(u'''
          <div class="input-group">
@@ -105,7 +105,7 @@ class DatepickerInput(forms.DateInput):
             attrs['data-format'] = date_format
 
         field = super(DatepickerInput, self).render(name, value, attrs)
-        final_attrs = self.build_attrs(attrs, name=name)
+        final_attrs = self.build_attrs(attrs)
 
         output = format_html(u'''
          <div class="input-append date datepicker" data-provide="datepicker" {0}>
@@ -134,7 +134,7 @@ class DateTimePickerInput(forms.DateTimeInput):
             attrs['class'] = 'input-medium'
 
         field = super(DateTimePickerInput, self).render(name, value, attrs)
-        final_attrs = self.build_attrs(attrs, name=name)
+        final_attrs = self.build_attrs(attrs)
 
         output = format_html(u'''
          <div class="input-append date datetimepicker" {0}>
