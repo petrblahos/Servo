@@ -17,11 +17,12 @@ from django.db import DatabaseError
 
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
-from django.views.decorators.cache import cache_page
 from django.shortcuts import render, redirect, get_object_or_404
 
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import permission_required
+
+from wkhtmltopdf.views import PDFTemplateView
 
 from servo.lib.utils import paginate
 
@@ -31,7 +32,6 @@ from servo.forms.repairs import StatusForm
 
 from servo.models import Note, User, Device, Customer
 from servo.models.common import (Tag,
-                                 Configuration,
                                  FlaggedItem,
                                  GsxAccount,)
 from servo.models.repair import (Checklist,
@@ -191,9 +191,7 @@ def prepare_detail_view(request, pk):
 
 @permission_required("servo.change_order")
 def close(request, pk):
-    """
-    Closes this Service Order
-    """
+    """Close this Service Order."""
     order = get_object_or_404(Order, pk=pk)
 
     if request.method == 'POST':
@@ -218,6 +216,7 @@ def close(request, pk):
 
 @permission_required("servo.delete_order")
 def reopen_order(request, pk):
+    """Open a closed order."""
     order = get_object_or_404(Order, pk=pk)
     msg = order.reopen(request.user)
     messages.success(request, msg)
@@ -225,7 +224,10 @@ def reopen_order(request, pk):
 
 
 @permission_required("servo.add_order")
-def create(request, sn=None, device_id=None, product_id=None, note_id=None, customer_id=None):
+def create(request, sn=None, device_id=None,
+           product_id=None,
+           note_id=None,
+           customer_id=None):
     """Create a new Service Order."""
     order = Order(created_by=request.user)
 
@@ -554,32 +556,29 @@ def update_order(request, pk, what, what_id):
     return redirect(order)
 
 
-def put_on_paper(request, pk, kind="confirmation"):
+def put_on_paper(request, pk, kind="confirmation", fmt='html'):
     """
     'Print' was taken?
     """
-    conf = Configuration.conf()
     order = get_object_or_404(Order, pk=pk)
-
-    title = _(u"Service Order #%s") % order.code
-    notes = order.note_set.filter(is_reported=True)
-
+    data = order.get_print_dict(kind)
     template = order.get_print_template(kind)
-    
-    if kind == "receipt":
-        try:
-            invoice = order.invoice_set.latest()
-        except Exception as e:
-            pass
 
-    return render(request, template, locals())
+    if fmt == 'pdf':
+        fn = data.get('title') + '.pdf'
+        view = PDFTemplateView(request=request, template_name=template,
+                               filename=fn)
+        return view.render_to_response(data)
+
+    return render(request, template, data)
 
 
 @permission_required("servo.change_order")
 def add_device(request, pk, device_id=None, sn=None):
     """
-    Adds a device to a service order
-    using device_id with existing devices or
+    Add a device to a service order.
+
+    Use device_id with existing devices or
     sn for new devices (which should have gone through GSX search)
     """
     order = get_object_or_404(Order, pk=pk)
@@ -670,9 +669,7 @@ def reserve_products(request, pk):
 
 @permission_required("servo.change_order")
 def edit_product(request, pk, item_id):
-    """
-    Edits a product added to an order
-    """
+    """Edit a product added to an order."""
     order = Order.objects.get(pk=pk)
     item = get_object_or_404(ServiceOrderItem, pk=item_id)
 
@@ -857,9 +854,7 @@ def choose_customer(request, pk):
 
         if len(query) > 2:
             customers = Customer.objects.filter(
-                Q(fullname__icontains=query)
-                | Q(email__icontains=query)
-                | Q(phone__contains=query)
+                Q(fullname__icontains=query) | Q(email__icontains=query) | Q(phone__contains=query)
             )
 
         if kind == 'companies':
@@ -936,8 +931,8 @@ def download_results(request):
     writer.writerow(header)
 
     for o in request.session['order_queryset']:
-        row = [o.code, o.customer, o.created_at, 
-            o.user, o.checkin_location, o.location]
+        row = [o.code, o.customer, o.created_at,
+               o.user, o.checkin_location, o.location]
         coded = [unicode(s).encode('utf-8') for s in row]
 
         writer.writerow(coded)

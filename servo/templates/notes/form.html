@@ -50,7 +50,14 @@
       {% include "form_field_snippet.html" with field=form.subject %}
       {% include "form_field_snippet.html" with field=form.sender %}
       {% include "form_field_snippet.html" with field=form.body %}
-      {% include "form_field_snippet.html" with field=form.is_reported %}
+      {% if note.order %}
+      <table>
+        <tr>
+          <td>{% include "form_field_snippet.html" with field=form.is_reported %}</td>
+          <td>{% include "form_field_snippet.html" with field=form.attach_confirmation %}</td>
+        </tr>
+      </table>
+      {% endif %}
       {{ form.type }}
     </div>
     <div class="tab-pane" id="tab2">

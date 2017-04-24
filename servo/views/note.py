@@ -10,9 +10,10 @@ from django.http import HttpResponse
 from django.utils.translation import ugettext as _
 from django.forms.models import modelformset_factory
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.cache import cache_page
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import permission_required
+
+from django.core.files.base import ContentFile
 
 from reportlab.lib.units import mm
 from reportlab.graphics.shapes import Drawing
@@ -20,24 +21,23 @@ from reportlab.graphics.barcode import createBarcodeDrawing
 
 from servo.lib.utils import paginate
 from servo.models import (Order, Template, Tag, Customer, Note,
-                         Attachment, Escalation, Article,)
+                          Attachment, Escalation, Article,)
 from servo.forms import NoteForm, NoteSearchForm, EscalationForm
 
 
 class BarcodeDrawing(Drawing):
+    """Pretty generic Reportlab drawing to render barcodes."""
     def __init__(self, text_value, *args, **kwargs):
         barcode = createBarcodeDrawing("Code128",
                                        value=text_value.encode("utf-8"),
-                                       barHeight=10*mm,
-                                       width=80*mm)
+                                       barHeight=10 * mm,
+                                       width=80 * mm)
         Drawing.__init__(self, barcode.width, barcode.height, *args, **kwargs)
         self.add(barcode, name="barcode")
 
 
 def show_barcode(request, text):
-    """
-    Returns text as a barcode
-    """
+    """Return text as a barcode."""
     if request.GET.get('f') == 'svg':
         import barcode
         output = StringIO.StringIO()
@@ -52,9 +52,7 @@ def show_barcode(request, text):
 
 
 def prep_list_view(request, kind):
-    """
-    Prepares the view for listing notes/messages
-    """
+    """Prepare the view for listing notes/messages."""
     data = {'title': _("Messages")}
     all_notes = Note.objects.all().order_by("-created_at")
 
@@ -82,10 +80,7 @@ def prep_list_view(request, kind):
 
 @permission_required('servo.change_note')
 def copy(request, pk):
-    """
-    Copies a note with its attachments and labels
-    """
-    from servo.lib.shorturl import from_time
+    """Copy a note with its attachments and labels."""
     note = get_object_or_404(Note, pk=pk)
 
     new_note = Note(created_by=request.user)
@@ -96,7 +91,7 @@ def copy(request, pk):
 
     new_note.labels = note.labels.all()
 
-    for a in note.attachments.all(): # also copy the attachments
+    for a in note.attachments.all():  # also copy the attachments
         a.pk = None
         a.content_object = new_note
         a.save()
@@ -106,10 +101,11 @@ def copy(request, pk):
 
 
 @permission_required('servo.change_note')
-def edit(request, pk=None, order_id=None, parent=None, recipient=None,
-         customer=None):
+def edit(request, pk=None, order_id=None,
+         parent=None, recipient=None, customer=None):
     """
-    Edits a note
+    Edit a note.
+
     @FIXME: Should split this up into smaller pieces
     """
     to = []
@@ -220,6 +216,18 @@ def edit(request, pk=None, order_id=None, parent=None, recipient=None,
                         return redirect(note)
 
                 note.attachments.add(*files)
+
+                if form.cleaned_data.get('attach_confirmation'):
+                    from servo.views.order import put_on_paper
+                    response = put_on_paper(request, note.order_id, fmt='pdf')
+                    filename = response.filename
+                    content = response.render().content
+                    content = ContentFile(content, filename)
+                    attachment = Attachment(content=content, content_object=note)
+                    attachment.save()
+                    attachment.content.save(filename, content)
+                    note.attachments.add(attachment)
+
                 note.save()
 
                 try:

@@ -14,7 +14,7 @@ MESSAGE_TAGS = {
 }
 
 BASE_DIR = os.path.dirname(__file__)
-APP_DIR  = os.path.join(BASE_DIR, 'servo')
+APP_DIR = os.path.join(BASE_DIR, 'servo')
 
 ADMINS = (
     ('ServoApp Support', 'support@servoapp.com'),
@@ -32,55 +32,30 @@ LANGUAGES = (
 )
 
 SITE_ID = 1
-
-# If you set this to False, Django will make some optimizations so as not
-# to load the internationalization machinery.
+USE_TZ = True
 USE_I18N = True
-
-# If you set this to False, Django will not format dates, numbers and
-# calendars according to the current locale.
 USE_L10N = True
 USE_THOUSAND_SEPARATOR = True
 
-# If you set this to False, Django will not use timezone-aware datetimes.
-USE_TZ = True
-
 # Absolute filesystem path to the directory that will hold user-uploaded files.
-# Example: "/home/media/media.lawrence.com/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')
-TEMP_ROOT = os.path.join(MEDIA_ROOT, 'temp')
-
-# URL that handles the media served from MEDIA_ROOT. Make sure to use a
-# trailing slash.
-# Examples: "http://media.lawrence.com/media/", "http://example.com/media/"
 MEDIA_URL = '/files/'
 
-# Absolute path to the directory static files should be collected to.
-# Don't put anything in this directory yourself; store your static files
-# in apps' "static/" subdirectories and in STATICFILES_DIRS.
-# Example: "/home/media/media.lawrence.com/static/"
-STATIC_ROOT = os.path.dirname(os.path.join(BASE_DIR, 'static'))
-
-# Additional locations of static files
-STATICFILES_DIRS = (
-    'static',
-)
-
-# URL prefix for static files.
-# Example: "http://media.lawrence.com/static/"
+STATIC_ROOT = os.path.join(APP_DIR, 'static')
 STATIC_URL = '/static/'
-
-MESSAGE_STORAGE = 'django.contrib.messages.storage.fallback.FallbackStorage'
-
-# List of finder classes that know how to find static files in
-# various locations.
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     #'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
+# Absolute path to the directory that will hold temporary files.
+TEMP_ROOT = os.path.join(MEDIA_ROOT, 'temp')
+
+MESSAGE_STORAGE = 'django.contrib.messages.storage.fallback.FallbackStorage'
+
 MIDDLEWARE_CLASSES = (
+    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -109,6 +84,7 @@ TEMPLATES = [
         ),
         'OPTIONS': {
             'context_processors': (
+                #'django.template.context_processors.debug',
                 'django.contrib.auth.context_processors.auth',
                 'django.template.context_processors.static',
                 'django.template.context_processors.request',
@@ -128,7 +104,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.sessions',
     #'debug_toolbar',
-    'rest_framework',
+    'rest_framework', 'wkhtmltopdf',
     'rest_framework.authtoken',
     'mptt', 'bootstrap3',
     'servo',
@@ -172,8 +148,8 @@ FILE_UPLOAD_HANDLERS = ("django_excel.ExcelMemoryFileUploadHandler",
 SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 EXEMPT_URLS = []
 
-LOGIN_URL   = '/login/'
-LOGOUT_URL  = '/logout/'
+LOGIN_URL = '/login/'
+LOGOUT_URL = '/logout/'
 
 # URLs that should work without logging in
 LOGIN_EXEMPT_URLS = [
@@ -215,13 +191,13 @@ REST_FRAMEWORK = {
 
 ENABLE_RULES = False
 TIMEZONE = 'Europe/Helsinki'
-BACKUP_DIR  = os.path.join(BASE_DIR, 'backups')
+BACKUP_DIR = os.path.join(BASE_DIR, 'backups')
 
 GSX_CERT = os.path.join(BASE_DIR, 'uploads/settings/gsx_cert.pem')
-GSX_KEY  = os.path.join(BASE_DIR, 'uploads/settings/gsx_key.pem')
+GSX_KEY = os.path.join(BASE_DIR, 'uploads/settings/gsx_key.pem')
 
 os.environ['GSX_CERT'] = GSX_CERT
-os.environ['GSX_KEY']  = GSX_KEY
+os.environ['GSX_KEY'] = GSX_KEY
 
 CELERYBEAT_SCHEDULE = {
     'check_mail': {
@@ -230,11 +206,22 @@ CELERYBEAT_SCHEDULE = {
     },
 }
 
+WKHTMLTOPDF_ENV = {
+    'ignore_404': 'True'
+}
+
+WKHTMLTOPDF_CMD = '/usr/local/bin/wkhtmltopdf'
+WKHTMLTOPDF_CMD_OPTIONS = {
+    'quiet': True,
+    'zoom': '2.5',
+    'page-size': 'a4'
+}
+
 from local_settings import *
 
 CACHES['comptia'] = {
     'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
     'LOCATION': '127.0.0.1:11211',
-    'TIMEOUT': 60*60*24,
+    'TIMEOUT': 60 * 60 * 24,
     'KEY_PREFIX': 'comptia_'
 }

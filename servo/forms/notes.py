@@ -2,9 +2,7 @@
 
 import json
 from django import forms
-from gsxws import escalations
 from django.core.urlresolvers import reverse
-from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from servo.models import Note, Escalation, Template
@@ -12,17 +10,23 @@ from servo.forms import BaseModelForm, AutocompleteTextarea, TextInput
 
 
 class NoteForm(BaseModelForm):
+    attach_confirmation = forms.BooleanField(
+        label=_('Attach confirmation'),
+        help_text=_('Attach order confirmation as a PDF'),
+        required=False
+    )
+
     class Meta:
         model = Note
         exclude = []
         widgets = {
-            'recipient' : TextInput,
-            'subject'   : TextInput,
-            'order'     : forms.HiddenInput,
-            'parent'    : forms.HiddenInput,
-            'customer'  : forms.HiddenInput,
-            'type'      : forms.HiddenInput,
-            'labels'    : forms.CheckboxSelectMultiple,
+            'recipient': TextInput,
+            'subject': TextInput,
+            'order': forms.HiddenInput,
+            'parent': forms.HiddenInput,
+            'customer': forms.HiddenInput,
+            'type': forms.HiddenInput,
+            'labels': forms.CheckboxSelectMultiple,
         }
 
     def __init__(self, *args, **kwargs):
@@ -71,4 +75,3 @@ class EscalationForm(BaseModelForm):
     class Meta:
         model = Escalation
         fields = ('issue_type', 'status', 'gsx_account', 'contexts',)
-

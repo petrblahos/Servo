@@ -277,6 +277,25 @@ class Order(models.Model):
 
         return user.location.user_set.filter(is_active=True)
 
+    def get_print_dict(self, kind='confirmation'):
+        """
+        Return context dict for printing this order
+        """
+        r = {}
+        r['order'] = self
+        r['conf'] = Configuration.conf()
+        r['title'] = _(u"Service Order #%s") % self.code
+        r['notes'] = self.note_set.filter(is_reported=True)
+
+        if kind == 'receipt':
+            try:
+                # Include the latest invoice data for receipts
+                r['invoice'] = self.invoice_set.latest()
+            except Exception as e:
+                pass
+
+        return r
+
     def get_title(self):
         """
         Returns a human-readable title for this order, based on various criteria
@@ -524,7 +543,7 @@ class Order(models.Model):
 
     def unset_status(self, user):
         if self.is_closed:
-            return # fail silently
+            return  # fail silently
 
         self.status = None
         self.status_started_at   = None
