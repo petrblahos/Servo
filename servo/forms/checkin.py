@@ -17,7 +17,7 @@ from servo.validators import (apple_sn_validator,
 from servo.forms.base import SearchFieldInput
 from servo.models import (Configuration, Device,
                           Attachment, Location,
-                          Customer,)
+                          Customer, Queue,)
 
 
 # Generate list of years for purchase date picker
@@ -68,6 +68,11 @@ class DeviceForm(forms.ModelForm):
         widget=forms.Textarea(attrs={'class': 'span12', 'rows': 3}),
         help_text=_("Please describe the condition of the device")
     )
+
+    queue = forms.ModelChoiceField(label=_('Queue'),
+                                   required=False,
+                                   queryset=Queue.objects.all(),
+                                   help_text=_('Assign order to this queue'))
 
     class Meta:
         model = Device
@@ -233,7 +238,6 @@ class IssueForm(forms.Form):
 
     issue_description = forms.CharField(
         min_length=10,
-        #initial='Does not work very well',
         label=_(u'Problem description'),
         widget=forms.Textarea(attrs={'class': 'span12'})
     )
