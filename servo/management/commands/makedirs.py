@@ -13,6 +13,8 @@ class Command(BaseCommand):
                 'products', 'repairs', 'return_labels',
                 'settings', 'temp', 'templates']
 
+        if not os.path.isdir(settings.MEDIA_ROOT):
+            os.mkdir(settings.MEDIA_ROOT)
         for d in dirs:
             fp = os.path.join(settings.MEDIA_ROOT, d)
             try:
