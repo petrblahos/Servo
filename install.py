@@ -16,7 +16,10 @@ fh = open('local_settings.py', 'w')
 
 print("** Creating local configuration file **")
 args = {}
-args['dbadmin']    = raw_input('DB admin username [pgsql]: ') or 'pgsql'
+
+# not using dbadmin because the database is pre-created
+# args['dbadmin']    = raw_input('DB admin username [pgsql]: ') or 'pgsql'
+
 args['secret_key'] = os.urandom(32).encode('base-64').strip()
 args['install_locale'] = raw_input('1/10 Locale [sv_SE.UTF-8]: ') or 'sv_SE.UTF-8'
 default_country = args['install_locale'].split('_')[0]
@@ -36,8 +39,9 @@ template = Template(raw)
 
 s = template.substitute(**args)
 
-call(['createuser', args['dbuser'], '-U', args['dbadmin']])
-call(['createdb', args['dbname'], '-O', args['dbuser'], '-U', args['dbadmin']])
+# Not creating the user - we have it prepared in advance.
+# call(['createuser', args['dbuser'], '-U', args['dbadmin']])
+# call(['createdb', args['dbname'], '-O', args['dbuser'], '-U', args['dbadmin']])
 
 fh.write(s)
 fh.close()
