@@ -67,6 +67,7 @@ class User(AbstractUser):
         ('et_EE.UTF-8', _("Estonian")),
         ('fi_FI.UTF-8', _("Finnish")),
         ('sv_SE.UTF-8', _("Swedish")),
+        ('cs_CZ.UTF-8', _("Czech")),
     )
     locale = models.CharField(
         max_length=32,
@@ -92,6 +93,7 @@ class User(AbstractUser):
         ('en_US.UTF-8', _("United States")),
         ('nl_NL.UTF-8', _("Netherlands")),
         ('sv_SE.UTF-8', _("Sweden")),
+        ('cs_CZ.UTF-8', _("Czechia")),
     )
     region = models.CharField(
         max_length=32,

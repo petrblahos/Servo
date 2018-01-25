@@ -29,6 +29,7 @@ LANGUAGES = (
     ('et', 'Estonian'),
     ('fi', 'Finnish'),
     ('sv', 'Swedish'),
+    ('cs', 'Czech'),
 )
 
 SITE_ID = 1
@@ -108,6 +109,8 @@ INSTALLED_APPS = (
     'rest_framework.authtoken',
     'mptt', 'bootstrap3',
     'servo',
+
+    'django_extensions',
 )
 
 AUTH_USER_MODEL = 'servo.User'
@@ -164,7 +167,8 @@ LOGIN_EXEMPT_URLS = [
     'api/notes/',
     'api/users/',
     'api/customers/',
-    'api/devices/'
+    'api/devices/',
+    'static/',
 ]
 
 # 404 URLs that should be ignored

@@ -366,6 +366,7 @@ class SettingsForm(BaseForm):
             ('SEK', 'SEK'),
             ('USD', 'USD'),
             ('ZAR', 'ZAR'),
+            ('CZK', 'CZK'),
         ),
         initial='EUR'
     )
