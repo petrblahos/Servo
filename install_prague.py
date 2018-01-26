@@ -54,6 +54,7 @@ print("** Creating directories **")
 call(['./manage.py', 'makedirs'])
 
 print("** Creating Super User **")
+print("** It looks like the username 'admin' is not allowed ***")
 call(['./manage.py', 'createsuperuser'])
 
 loc = {}
